@@ -7,27 +7,35 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
 public class Connection {
-    private ByteBuffer writeBuffer;
+    private ByteBuffer outputBuffer;
 
-    private ByteBuffer readBuffer;
+    private ByteBuffer inputBuffer;
 
     private SocketChannel userToNotify;
 
-    public Connection(ByteBuffer writeBuffer, ByteBuffer readBuffer) {
-        this.writeBuffer = writeBuffer;
-        this.readBuffer = readBuffer;
+    public Connection(ByteBuffer outputBuffer, ByteBuffer inputBuffer) {
+        this.outputBuffer = outputBuffer;
+        this.inputBuffer = inputBuffer;
+    }
+
+    public Connection(ByteBuffer outputBuffer){
+        this.outputBuffer = outputBuffer;
+    }
+
+    public void setInputBuffer(ByteBuffer inputBuffer) {
+        this.inputBuffer = inputBuffer;
     }
 
     public void setUserToNotify(SocketChannel userToNotify) {
         this.userToNotify = userToNotify;
     }
 
-    public ByteBuffer getWriteBuffer() {
-        return writeBuffer;
+    public ByteBuffer getOutputBuffer() {
+        return outputBuffer;
     }
 
-    public ByteBuffer getReadBuffer() {
-        return readBuffer;
+    public ByteBuffer getInputBuffer() {
+        return inputBuffer;
     }
 
     public void notifyUser(Selector selector) throws ClosedChannelException {
