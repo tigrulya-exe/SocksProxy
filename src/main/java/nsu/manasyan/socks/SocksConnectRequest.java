@@ -15,9 +15,6 @@ public class SocksConnectRequest {
         this.version = version;
     }
 
-    public byte getnMethods() {
-        return nMethods;
-    }
 
     public void setnMethods(byte nMethods) {
         this.nMethods = nMethods;
@@ -28,7 +25,4 @@ public class SocksConnectRequest {
         return methods;
     }
 
-    public void setMethods(byte[] methods) {
-        this.methods = methods;
-    }
 }

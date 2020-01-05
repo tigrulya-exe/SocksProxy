@@ -1,6 +1,7 @@
 package nsu.manasyan.socks;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 // тут надо быть увереным, что коннект пришел полностью
 public class SocksParser {
@@ -19,7 +20,7 @@ public class SocksParser {
 
         byte command = byteBuffer.get();
         if(command != 0x01){
-            // send unsupported
+            // todo send unsupported
         }
         request.setCommand(command);
         checkAddressType(byteBuffer.get(), byteBuffer, request);
@@ -36,11 +37,20 @@ public class SocksParser {
                 byteBuffer.get(request.getIp4Address());
                 return;
             case 0x03:
+                request.setDomainName(getDomainName(byteBuffer));
                 // async resolve dns name;
                 return;
         }
 
-        // send unsupported
+        // todo send unsupported
         System.out.println("Unsupported address type");
+    }
+
+    private static String getDomainName(ByteBuffer byteBuffer){
+        byte nameLength = byteBuffer.get();
+        byte[] nameBytes = new byte[nameLength];
+        byteBuffer.get(nameBytes);
+
+        return new String(nameBytes, StandardCharsets.UTF_8);
     }
 }

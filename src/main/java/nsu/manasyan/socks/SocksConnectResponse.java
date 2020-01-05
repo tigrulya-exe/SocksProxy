@@ -1,7 +1,5 @@
 package nsu.manasyan.socks;
 
-import java.nio.ByteBuffer;
-
 public class SocksConnectResponse {
     private byte version = 0x05;
 

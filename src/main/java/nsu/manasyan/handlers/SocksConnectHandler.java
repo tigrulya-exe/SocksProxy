@@ -10,8 +10,6 @@ import java.nio.channels.SelectionKey;
 import static nsu.manasyan.socks.SocksParser.*;
 
 public class SocksConnectHandler extends Handler{
-    private static final byte SOCKS_VERSION = 0x05;
-
     private static final byte NO_AUTHENTICATION = 0x00;
 
     private static final byte NO_COMPARABLE_METHOD = (byte) 0xFF;

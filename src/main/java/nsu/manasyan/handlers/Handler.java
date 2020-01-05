@@ -30,7 +30,6 @@ public abstract class Handler {
         if(!isReadyToRead(connection))
             return;
 
-        // todo think about moving read to handlers
         socket.read(connection.getInputBuffer());
     }
 
@@ -50,5 +49,9 @@ public abstract class Handler {
         } else {
             outputBuffer.position(outputBuffer.position() + writeCount);
         }
+    }
+
+    public static int getBuffLength() {
+        return BUFF_LENGTH;
     }
 }
