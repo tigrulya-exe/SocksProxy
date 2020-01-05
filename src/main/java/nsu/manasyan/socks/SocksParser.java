@@ -1,8 +1,5 @@
 package nsu.manasyan.socks;
 
-import nsu.manasyan.models.SocksConnectRequest;
-import nsu.manasyan.models.SocksRequest;
-
 import java.nio.ByteBuffer;
 
 // тут надо быть увереным, что коннект пришел полностью
@@ -36,7 +33,7 @@ public class SocksParser {
 
         switch (addressType){
             case 0x01:
-                request.setIp4Address(byteBuffer.getInt());
+                byteBuffer.get(request.getIp4Address());
                 return;
             case 0x03:
                 // async resolve dns name;

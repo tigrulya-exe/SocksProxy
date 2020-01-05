@@ -1,4 +1,8 @@
-package nsu.manasyan.models;
+package nsu.manasyan.socks;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 public class SocksRequest {
     private byte version;
@@ -7,7 +11,7 @@ public class SocksRequest {
 
     private byte addressType;
 
-    private int ip4Address;
+    private byte[] ip4Address = new byte[4];
 
     private String domainName;
 
@@ -25,8 +29,8 @@ public class SocksRequest {
         this.addressType = addressType;
     }
 
-    public void setIp4Address(int ip4Address) {
-        this.ip4Address = ip4Address;
+    public byte[] getIp4Address() {
+        return ip4Address;
     }
 
     public void setDomainName(String domainName) {
@@ -39,5 +43,9 @@ public class SocksRequest {
 
     public byte getAddressType() {
         return addressType;
+    }
+
+    public InetSocketAddress getAddress() throws UnknownHostException {
+        return new InetSocketAddress(InetAddress.getByAddress(ip4Address), targetPort);
     }
 }

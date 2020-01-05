@@ -1,4 +1,4 @@
-package nsu.manasyan.models;
+package nsu.manasyan.socks;
 
 public class SocksConnectRequest {
     private byte version;

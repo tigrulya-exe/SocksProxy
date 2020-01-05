@@ -1,4 +1,4 @@
-package nsu.manasyan.models;
+package nsu.manasyan.socks;
 
 import java.nio.ByteBuffer;
 

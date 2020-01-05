@@ -26,11 +26,11 @@ public class SocksHandler {
 //            return false;
 //        }
 //
-//        sendResponse(connection, socketAddress);
+//        putResponseIntoBuf(connection, socketAddress);
 //        return true;
 //    }
 
-//    public static void sendResponse(Connection connection, InetSocketAddress socketAddress){
+//    public static void putResponseIntoBuf(Connection connection, InetSocketAddress socketAddress){
 //        SocksResponse response = new SocksResponse();
 //        var address = socketAddress.getAddress().getAddress();
 //        response.setBoundIp4Address(address);

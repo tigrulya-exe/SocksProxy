@@ -1,13 +1,11 @@
 package nsu.manasyan;
 
-import nsu.manasyan.handlers.ConnectHandler;
+import nsu.manasyan.handlers.SocksConnectHandler;
 import nsu.manasyan.handlers.Handler;
 import nsu.manasyan.models.Connection;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -21,15 +19,10 @@ import java.util.*;
 * участника соединения.
 * */
 
-
 public class Proxy {
     private final int proxyPort;
 
     private static final int BUFF_LENGTH = 8192;
-
-    private Map<SocketAddress, ByteBuffer> buffers = new HashMap<>();
-
-//    private Set<SocketAddress> unconnectedUsers = new HashSet<>();
 
     public Proxy(int proxyPort) {
         this.proxyPort = proxyPort;
@@ -40,7 +33,6 @@ public class Proxy {
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
             initServerSocketChannel(serverSocketChannel, selector);
             select(selector);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -72,50 +64,34 @@ public class Proxy {
     }
 
     private void handleSelectionKey(SelectionKey selectionKey, Selector selector) throws IOException {
+        if(!selectionKey.isValid()){
+            return;
+        }
+        Handler handler = (Handler) selectionKey.attachment();
+
         if(selectionKey.isAcceptable()){
             addNewConnection(selectionKey, selector);
+        } else if (selectionKey.isWritable()) {
+            handler.write(selectionKey);
         }
-        else if (selectionKey.isReadable()){
-            handleRead(selectionKey);
-        }
+        handler.handle(selectionKey);
     }
 
-    private void handleRead(SelectionKey selectionKey) throws IOException {
-        Handler handler = (Handler) selectionKey.attachment();
-        SocketChannel socket = (SocketChannel) selectionKey.channel();
-        Connection connection = handler.getConnection();
-
-        if(!isReadyToRead(connection))
-            return;
-
-        socket.read(connection.getInputBuffer());
-
-        boolean addressResolved = handler.handle(selectionKey);
-        if(!addressResolved){
-            // call dns service
-            return;
-        }
-
-        socket.write(connection.getOutputBuffer());
-    }
-
-    // todo check
-    private boolean isReadyToRead(Connection connection){
-        return connection.getInputBuffer().limit() < BUFF_LENGTH / 2;
-    }
-
+    // todo move to AcceptHandler
     private void addNewConnection(SelectionKey selectionKey, Selector selector) throws IOException {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) selectionKey.channel();
         SocketChannel socketChannel = serverSocketChannel.accept();
         socketChannel.configureBlocking(false);
+//        var socketAddress = socketChannel.getRemoteAddress();
+//        buffers.put(socketAddress, ByteBuffer.allocate(BUFF_LENGTH));
 
-        var socketAddress = socketChannel.getRemoteAddress();
-        buffers.put(socketAddress, ByteBuffer.allocate(BUFF_LENGTH));
+//        Connection connection = new Connection(buffers.get(socketAddress),
+//                ByteBuffer.allocate(BUFF_LENGTH));
+        Connection connection = new Connection(BUFF_LENGTH);
+        SocksConnectHandler connectHandler = new SocksConnectHandler(connection);
 
-        Connection connection = new Connection(buffers.get(socketAddress),
-                ByteBuffer.allocate(BUFF_LENGTH));
-
-        ConnectHandler connectHandler = new ConnectHandler(connection);
-        socketChannel.register(selector, SelectionKey.OP_READ, connectHandler);
+        var key = socketChannel.register(selector, SelectionKey.OP_READ, connectHandler);
+        connection.registerBufferListener(() -> key.interestOpsOr(SelectionKey.OP_WRITE));
     }
+
 }

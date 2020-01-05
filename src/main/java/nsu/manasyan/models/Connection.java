@@ -1,45 +1,50 @@
 package nsu.manasyan.models;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 
 public class Connection {
-    private ByteBuffer outputBuffer;
+    // сюда пишет клиент
+    private ObservableByteBuffer outputBuffer;
 
-    private ByteBuffer inputBuffer;
+    // отсюда читает
+    private ObservableByteBuffer inputBuffer;
 
-    private SocketChannel userToNotify;
-
-    public Connection(ByteBuffer outputBuffer, ByteBuffer inputBuffer) {
+    public Connection(ObservableByteBuffer outputBuffer, ObservableByteBuffer inputBuffer) {
         this.outputBuffer = outputBuffer;
         this.inputBuffer = inputBuffer;
     }
 
-    public Connection(ByteBuffer outputBuffer){
-        this.outputBuffer = outputBuffer;
-    }
-
-    public void setInputBuffer(ByteBuffer inputBuffer) {
-        this.inputBuffer = inputBuffer;
-    }
-
-    public void setUserToNotify(SocketChannel userToNotify) {
-        this.userToNotify = userToNotify;
+    public Connection(int buffLength) {
+        this.inputBuffer = new ObservableByteBuffer(ByteBuffer.allocate(buffLength));
+        this.outputBuffer = new ObservableByteBuffer(ByteBuffer.allocate(buffLength));
     }
 
     public ByteBuffer getOutputBuffer() {
-        return outputBuffer;
+        return outputBuffer.getByteBuffer();
     }
 
     public ByteBuffer getInputBuffer() {
+        return inputBuffer.getByteBuffer();
+    }
+
+    public ObservableByteBuffer getObservableOutputBuffer() {
+        return outputBuffer;
+    }
+
+    public ObservableByteBuffer getObservableInputBuffer() {
         return inputBuffer;
     }
 
-    public void notifyUser(Selector selector) throws ClosedChannelException {
-        if(userToNotify != null)
-            userToNotify.register(selector, SelectionKey.OP_WRITE);
+    public void registerBufferListener(ObservableByteBuffer.BufferListener bufferListener){
+        inputBuffer.registerBufferListener(bufferListener);
+    }
+
+    public void notifyBufferListener(){
+        outputBuffer.notifyListener();
+    }
+
+    // for socks connect/request response
+    public void notifySelf(){
+        inputBuffer.notifyListener();
     }
 }
