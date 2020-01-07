@@ -30,6 +30,7 @@ public class SocksConnectHandler extends Handler{
 
         var inputBuffer = connection.getInputBuffer();
         inputBuffer.put(connectResponse.toByteArr());
+        inputBuffer.flip();
 
         connection.notifySelf();
         selectionKey.attach(new RequestHandler(connection));

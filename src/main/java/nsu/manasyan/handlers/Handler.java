@@ -2,6 +2,7 @@ package nsu.manasyan.handlers;
 
 import nsu.manasyan.models.Connection;
 
+import javax.crypto.spec.PSource;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -27,10 +28,12 @@ public abstract class Handler {
         SocketChannel socket = (SocketChannel) selectionKey.channel();
         Connection connection = handler.getConnection();
 
-        if(!isReadyToRead(connection))
-            return;
+//        if(!isReadyToRead(connection))
+//            return;
 
-        socket.read(connection.getInputBuffer());
+        var outputBuffer = connection.getOutputBuffer();
+        int count = socket.read(outputBuffer);
+        outputBuffer.flip();
     }
 
     private boolean isReadyToRead(Connection connection){
@@ -38,16 +41,14 @@ public abstract class Handler {
     }
 
     public void write(SelectionKey selectionKey) throws IOException {
-        ByteBuffer outputBuffer = connection.getOutputBuffer();
+        ByteBuffer inputBuffer = connection.getInputBuffer();
         SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
 
-        int writeCount = socketChannel.write(outputBuffer);
+        socketChannel.write(inputBuffer);
 
-        if(writeCount == outputBuffer.remaining()){
+        if(inputBuffer.remaining() == 0){
             selectionKey.interestOps(SelectionKey.OP_READ);
-            outputBuffer.clear();
-        } else {
-            outputBuffer.position(outputBuffer.position() + writeCount);
+            inputBuffer.clear();
         }
     }
 

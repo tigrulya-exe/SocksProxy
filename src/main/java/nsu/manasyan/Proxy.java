@@ -30,6 +30,7 @@ public class Proxy {
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
 
             DnsService dnsService = DnsService.getInstance();
+            datagramSocket.configureBlocking(false);
             dnsService.setSocket(datagramSocket);
             dnsService.registerSelector(selector);
             initServerSocketChannel(serverSocketChannel, selector);
@@ -57,7 +58,7 @@ public class Proxy {
                 try {
                     var readyKey = iterator.next();
                     iterator.remove();
-                    if(readyKey.isValid())
+                    if (readyKey.isValid())
                         handleSelectionKey(readyKey);
                 } catch (IOException exception) {
                     exception.printStackTrace();
@@ -72,7 +73,9 @@ public class Proxy {
         if (selectionKey.isWritable()) {
             handler.write(selectionKey);
         }
-        handler.handle(selectionKey);
-    }
+        // not only writable
+        if(selectionKey.readyOps() != SelectionKey.OP_WRITE)
+            handler.handle(selectionKey);
+        }
 
 }

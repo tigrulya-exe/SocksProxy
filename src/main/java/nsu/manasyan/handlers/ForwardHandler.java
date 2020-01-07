@@ -12,6 +12,7 @@ public class ForwardHandler extends Handler {
 
     @Override
     public void handle(SelectionKey selectionKey) throws IOException {
+        System.out.println("FORWARD");
         Connection connection = ((Handler) selectionKey.attachment()).getConnection();
         read(selectionKey);
         connection.notifyBufferListener();

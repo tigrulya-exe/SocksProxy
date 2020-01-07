@@ -3,7 +3,7 @@ package nsu.manasyan.socks;
 import java.nio.ByteBuffer;
 
 public class SocksResponse {
-    private static final int RESPONSE_LENGTH = 9;
+    private static final int RESPONSE_LENGTH = 10;
 
     private byte version = 0x05;
 

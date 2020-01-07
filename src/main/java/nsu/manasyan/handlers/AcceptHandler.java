@@ -25,5 +25,7 @@ public class AcceptHandler extends Handler {
 
         var key = socketChannel.register(selectionKey.selector(), SelectionKey.OP_READ, connectHandler);
         connection.registerBufferListener(() -> key.interestOpsOr(SelectionKey.OP_WRITE));
+
+        System.out.println("New connection: " + socketChannel.getRemoteAddress());
     }
 }

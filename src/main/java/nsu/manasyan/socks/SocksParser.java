@@ -10,12 +10,16 @@ public class SocksParser {
         connect.setVersion(byteBuffer.get());
         connect.setnMethods(byteBuffer.get());
         byteBuffer.get(connect.getMethods());
+        byteBuffer.clear();
 //        byteBuffer.get(connect.getMethods(), 0, connect.getnMethods());
         return connect;
     }
 
+    // if unsupported return null
+    // ну или делать чек уже в хендлере а тут просто парсить
     public static SocksRequest parseRequest(ByteBuffer byteBuffer){
         SocksRequest request = new SocksRequest();
+        System.out.println("POS: " + byteBuffer.position() + " LIM: " + byteBuffer.limit());
         request.setVersion(byteBuffer.get());
 
         byte command = byteBuffer.get();
@@ -23,6 +27,7 @@ public class SocksParser {
             // todo send unsupported
         }
         request.setCommand(command);
+        byteBuffer.get();
         checkAddressType(byteBuffer.get(), byteBuffer, request);
         request.setTargetPort(byteBuffer.getShort());
 
@@ -38,7 +43,6 @@ public class SocksParser {
                 return;
             case 0x03:
                 request.setDomainName(getDomainName(byteBuffer));
-                // async resolve dns name;
                 return;
         }
 

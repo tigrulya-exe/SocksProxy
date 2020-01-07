@@ -6,10 +6,12 @@ import nsu.manasyan.socks.SocksResponse;
 import nsu.manasyan.dns.DnsService;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 
 import static nsu.manasyan.socks.SocksParser.parseRequest;
 
@@ -55,6 +57,7 @@ public class RequestHandler extends Handler {
                 clientConnection.getObservableOutputBuffer());
 
         SelectionKey key;
+        System.out.println(targetAddress);
         targetSocket.connect(targetAddress);
         ConnectHandler connectHandler = new ConnectHandler(targetConnection);
         key = targetSocket.register(selector, SelectionKey.OP_CONNECT, connectHandler);
@@ -67,7 +70,11 @@ public class RequestHandler extends Handler {
         var socketAddress = (InetSocketAddress) socketChannel.getLocalAddress();
 
         SocksResponse response = new SocksResponse();
-        var address = socketAddress.getAddress().getAddress();
+        var address = InetAddress.getLocalHost().getAddress();
+
+        System.out.println(address.length);
+        System.out.println(Arrays.toString(address));
+
         response.setBoundIp4Address(address);
         response.setBoundPort((short) socketAddress.getPort());
 
@@ -75,5 +82,6 @@ public class RequestHandler extends Handler {
         inputBuff.put(response.toByteBuffer());
         // limit -> pos, pos -> 0
         inputBuff.flip();
+        connection.notifySelf();
     }
 }

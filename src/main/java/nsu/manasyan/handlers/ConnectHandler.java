@@ -14,6 +14,7 @@ public class ConnectHandler extends Handler{
 
     @Override
     public void handle(SelectionKey selectionKey) throws IOException {
+        System.out.println("CONNECT");
         var socketChannel = (SocketChannel) selectionKey.channel();
         var handler = (Handler) selectionKey.attachment();
         var connection = handler.getConnection();
