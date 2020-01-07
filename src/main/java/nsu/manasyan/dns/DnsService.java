@@ -56,7 +56,7 @@ public class DnsService {
             byte[] queryBytes = query.toWire();
             unresolvedNames.put(query.getHeader().getID(), mapValue);
 
-            // todo add connection field to dns server communication handler class
+            // todo add socketChannel field to dns server communication handler class
             socket.send(ByteBuffer.wrap(queryBytes), dnsServerAddress);
         } catch (TextParseException exc){
             // todo send err response to socks client

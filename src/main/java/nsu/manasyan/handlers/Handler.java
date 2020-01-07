@@ -48,7 +48,7 @@ public abstract class Handler {
         return connection.getInputBuffer().position() < BUFF_LENGTH / 2;
     }
 
-    public void write(SelectionKey selectionKey) throws IOException {
+    public int write(SelectionKey selectionKey) throws IOException {
         ByteBuffer inputBuffer = connection.getInputBuffer();
         SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
 
@@ -56,10 +56,13 @@ public abstract class Handler {
         int writtenCount = socketChannel.write(inputBuffer);
         System.out.println("WRITTEN: " + writtenCount);
 
-        if(inputBuffer.remaining() == 0){
+        int remaining = inputBuffer.remaining();
+        if(remaining == 0){
             selectionKey.interestOps(SelectionKey.OP_READ);
             inputBuffer.clear();
         }
+
+        return remaining;
     }
 
     public static int getBuffLength() {

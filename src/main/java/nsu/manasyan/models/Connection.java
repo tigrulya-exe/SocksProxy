@@ -5,10 +5,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 public class Connection {
-    // сюда пишет клиент
+    // user write to
     private ObservableByteBuffer outputBuffer;
 
-    // отсюда читает
+    // user read from
     private ObservableByteBuffer inputBuffer;
 
     private SocketChannel secondUser;
@@ -53,6 +53,7 @@ public class Connection {
 
     public void closeSecondUser() throws IOException {
         System.out.println("SECOND CLOSED");
-        secondUser.close();
+        if(secondUser != null)
+            secondUser.close();
     }
 }

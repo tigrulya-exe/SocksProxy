@@ -8,11 +8,8 @@ import nsu.manasyan.dns.DnsService;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.Arrays;
 
 import static nsu.manasyan.socks.SocksParser.parseRequest;
 
@@ -20,6 +17,8 @@ public class RequestHandler extends Handler {
     private static final byte DOMAIN_NAME_TYPE = 0x03;
 
     private static final int ANY_PORT = 0;
+
+    private static final int NO_ERROR = 0;
 
     public RequestHandler(Connection connection) {
         super(connection);
@@ -33,8 +32,10 @@ public class RequestHandler extends Handler {
         read(selectionKey);
 
         SocksRequest request = parseRequest(outputBuffer);
-
-        if(request.getParseError() != 0x00){
+        var parseError = request.getParseError();
+        if(parseError != NO_ERROR){
+            putErrorResponseIntoBuf(selectionKey, parseError);
+            selectionKey.attach(new ErrorHandler(connection));
             return;
         }
 
@@ -43,6 +44,7 @@ public class RequestHandler extends Handler {
             dnsService.resolveName(request,selectionKey);
             return;
         }
+
         connectToTarget(selectionKey, request.getAddress());
     }
 
@@ -95,11 +97,14 @@ public class RequestHandler extends Handler {
         inputBuff.put(response.toByteBuffer());
     }
 
-    public void putErrorResponseIntoBuf(Connection connection) throws IOException {
+    public void putErrorResponseIntoBuf(SelectionKey selectionKey, byte error) throws IOException {
+        var connection = getConnection();
         SocksResponse response = new SocksResponse();
-
+        response.setReply(error);
 
         var inputBuff = connection.getInputBuffer();
         inputBuff.put(response.toByteBuffer());
+        connection.getOutputBuffer().clear();
+        selectionKey.interestOpsOr(SelectionKey.OP_WRITE);
     }
 }
