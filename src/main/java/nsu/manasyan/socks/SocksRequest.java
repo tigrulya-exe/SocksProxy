@@ -4,7 +4,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-public class SocksRequest {
+public class    SocksRequest {
     private byte version;
 
     private byte command;
@@ -43,6 +43,14 @@ public class SocksRequest {
 
     public byte getAddressType() {
         return addressType;
+    }
+
+    public String getDomainName() {
+        return domainName;
+    }
+
+    public short getTargetPort() {
+        return targetPort;
     }
 
     public InetSocketAddress getAddress() throws UnknownHostException {

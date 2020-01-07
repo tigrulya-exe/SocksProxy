@@ -3,6 +3,7 @@ package nsu.manasyan.handlers;
 import nsu.manasyan.models.Connection;
 import nsu.manasyan.socks.SocksRequest;
 import nsu.manasyan.socks.SocksResponse;
+import nsu.manasyan.dns.DnsService;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -28,7 +29,8 @@ public class RequestHandler extends Handler {
 
         SocksRequest request = parseRequest(connection.getOutputBuffer());
         if(request.getAddressType() == DOMAIN_NAME_TYPE){
-            // call dns service
+            DnsService dnsService = DnsService.getInstance();
+            dnsService.resolveName(request,selectionKey);
             return;
         }
         connectToTarget(selectionKey, request.getAddress());

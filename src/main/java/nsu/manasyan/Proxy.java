@@ -2,9 +2,11 @@ package nsu.manasyan;
 
 import nsu.manasyan.handlers.AcceptHandler;
 import nsu.manasyan.handlers.Handler;
+import nsu.manasyan.dns.DnsService;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -24,7 +26,12 @@ public class Proxy {
 
     public void start(){
         try(Selector selector = Selector.open();
+            DatagramChannel datagramSocket = DatagramChannel.open();
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
+
+            DnsService dnsService = DnsService.getInstance();
+            dnsService.setSocket(datagramSocket);
+            dnsService.registerSelector(selector);
             initServerSocketChannel(serverSocketChannel, selector);
             select(selector);
         } catch (IOException e) {

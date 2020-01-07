@@ -1,5 +1,9 @@
 package nsu.manasyan;
 
+import org.xbill.DNS.ResolverConfig;
+
+import java.util.Arrays;
+
 public class Main {
     // todo tmp
     public static void main(String[] args) {
