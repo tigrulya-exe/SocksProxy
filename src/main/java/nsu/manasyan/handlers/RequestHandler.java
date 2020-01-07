@@ -8,6 +8,7 @@ import nsu.manasyan.dns.DnsService;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -26,10 +27,17 @@ public class RequestHandler extends Handler {
 
     @Override
     public void handle(SelectionKey selectionKey) throws IOException {
-        read(selectionKey);
         Connection connection = getConnection();
+        var outputBuffer = connection.getOutputBuffer();
+        outputBuffer.clear();
+        read(selectionKey);
 
-        SocksRequest request = parseRequest(connection.getOutputBuffer());
+        SocksRequest request = parseRequest(outputBuffer);
+
+        if(request.getParseError() != 0x00){
+            return;
+        }
+
         if(request.getAddressType() == DOMAIN_NAME_TYPE){
             DnsService dnsService = DnsService.getInstance();
             dnsService.resolveName(request,selectionKey);
@@ -38,18 +46,21 @@ public class RequestHandler extends Handler {
         connectToTarget(selectionKey, request.getAddress());
     }
 
-    public static void connectToTarget(SelectionKey selectionKey, InetSocketAddress targetAddress) throws IOException {
-        var handler = (Handler) selectionKey.attachment();
-        var connection = handler.getConnection();
-        var selector = selectionKey.selector();
+    public static void connectToTarget(SelectionKey clientKey, InetSocketAddress targetAddress) throws IOException {
+        var handler = (Handler) clientKey.attachment();
 
-        var targetSocketChannel = initTargetSocket(connection, selector, targetAddress);
-        putResponseIntoBuf(connection, targetSocketChannel);
-        selectionKey.attach(new ForwardHandler(connection));
+        System.out.println("CONNECT");
+        var clientConnection = handler.getConnection();
+        var targetSocketChannel = initTargetSocket(clientConnection, clientKey, targetAddress);
+
+        putResponseIntoBuf(clientConnection, targetSocketChannel);
+        clientKey.interestOpsOr(SelectionKey.OP_WRITE);
+        clientKey.attach(new ForwardHandler(clientConnection));
+        clientConnection.getOutputBuffer().clear();
     }
 
     public static SocketChannel initTargetSocket(Connection clientConnection,
-                                                 Selector selector, InetSocketAddress targetAddress) throws IOException {
+                                                 SelectionKey selectionKey, InetSocketAddress targetAddress) throws IOException {
         SocketChannel targetSocket = SocketChannel.open();
         targetSocket.bind(new InetSocketAddress(ANY_PORT));
         targetSocket.configureBlocking(false);
@@ -58,11 +69,15 @@ public class RequestHandler extends Handler {
                 clientConnection.getObservableOutputBuffer());
 
         SelectionKey key;
-        System.out.println(targetAddress);
         targetSocket.connect(targetAddress);
         ConnectHandler connectHandler = new ConnectHandler(targetConnection);
-        key = targetSocket.register(selector, SelectionKey.OP_CONNECT, connectHandler);
+
+        clientConnection.setSecondUser(targetSocket);
+        targetConnection.setSecondUser((SocketChannel) selectionKey.channel());
+
+        key = targetSocket.register(selectionKey.selector(), SelectionKey.OP_CONNECT, connectHandler);
         targetConnection.registerBufferListener(() -> key.interestOpsOr(SelectionKey.OP_WRITE));
+
 
         return targetSocket;
     }
@@ -73,17 +88,18 @@ public class RequestHandler extends Handler {
         SocksResponse response = new SocksResponse();
         var address = InetAddress.getLocalHost().getAddress();
 
-        System.out.println(address.length);
-        System.out.println(Arrays.toString(address));
-
         response.setBoundIp4Address(address);
         response.setBoundPort((short) socketAddress.getPort());
 
         var inputBuff = connection.getInputBuffer();
-
         inputBuff.put(response.toByteBuffer());
-        // limit -> pos, pos -> 0
-        inputBuff.flip();
-        connection.notifySelf();
+    }
+
+    public void putErrorResponseIntoBuf(Connection connection) throws IOException {
+        SocksResponse response = new SocksResponse();
+
+
+        var inputBuff = connection.getInputBuffer();
+        inputBuff.put(response.toByteBuffer());
     }
 }

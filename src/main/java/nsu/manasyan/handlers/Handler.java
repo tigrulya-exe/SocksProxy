@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 
 public abstract class Handler {
     private static final int BUFF_LENGTH = 8192;
@@ -28,25 +29,32 @@ public abstract class Handler {
         SocketChannel socket = (SocketChannel) selectionKey.channel();
         Connection connection = handler.getConnection();
 
-//        if(!isReadyToRead(connection))
-//            return;
+        if(!isReadyToRead(connection))
+            return 0;
 
         var outputBuffer = connection.getOutputBuffer();
         int readCount = socket.read(outputBuffer);
-        outputBuffer.flip();
+
+        if(readCount < 0) {
+            throw new IOException("Socket closed");
+        }
+
+        System.out.println("READ: " + readCount);
 
         return readCount;
     }
 
     private boolean isReadyToRead(Connection connection){
-        return connection.getInputBuffer().limit() < BUFF_LENGTH / 2;
+        return connection.getInputBuffer().position() < BUFF_LENGTH / 2;
     }
 
     public void write(SelectionKey selectionKey) throws IOException {
         ByteBuffer inputBuffer = connection.getInputBuffer();
         SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
 
-        socketChannel.write(inputBuffer);
+        inputBuffer.flip();
+        int writtenCount = socketChannel.write(inputBuffer);
+        System.out.println("WRITTEN: " + writtenCount);
 
         if(inputBuffer.remaining() == 0){
             selectionKey.interestOps(SelectionKey.OP_READ);

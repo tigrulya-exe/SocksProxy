@@ -5,11 +5,9 @@ import nsu.manasyan.handlers.Handler;
 import nsu.manasyan.dns.DnsService;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.nio.channels.DatagramChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.*;
 import java.util.Iterator;
 
 /*
@@ -55,16 +53,26 @@ public class Proxy {
             var readyKeys = selector.selectedKeys();
             Iterator<SelectionKey> iterator = readyKeys.iterator();
             while (iterator.hasNext()) {
+                var readyKey = iterator.next();
                 try {
-                    var readyKey = iterator.next();
                     iterator.remove();
                     if (readyKey.isValid())
                         handleSelectionKey(readyKey);
                 } catch (IOException exception) {
-                    exception.printStackTrace();
+                    closeConnection(readyKey);
                 }
             }
         }
+    }
+
+    private void closeConnection(SelectionKey selectionKey) throws IOException {
+        var handler = (Handler) selectionKey.attachment();
+        var connection = handler.getConnection();
+        var firstSocket = (SocketChannel) selectionKey.channel();
+
+        // todo tmp
+        firstSocket.close();
+        connection.closeSecondUser();
     }
 
     private void handleSelectionKey(SelectionKey selectionKey) throws IOException {

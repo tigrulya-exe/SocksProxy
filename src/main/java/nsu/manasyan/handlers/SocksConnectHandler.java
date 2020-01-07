@@ -20,19 +20,21 @@ public class SocksConnectHandler extends Handler{
 
     @Override
     public void handle(SelectionKey selectionKey) throws IOException {
-        read(selectionKey);
         Connection connection = getConnection();
+        var outputBuffer = connection.getOutputBuffer();
+        outputBuffer.clear();
+        read(selectionKey);
 
-        SocksConnectRequest ConnectRequest = parseConnect(connection.getOutputBuffer());
+        SocksConnectRequest ConnectRequest = parseConnect(outputBuffer);
         SocksConnectResponse connectResponse = new SocksConnectResponse();
         if(!checkMethods(ConnectRequest.getMethods()))
             connectResponse.setMethod(NO_COMPARABLE_METHOD);
 
         var inputBuffer = connection.getInputBuffer();
         inputBuffer.put(connectResponse.toByteArr());
-        inputBuffer.flip();
+//        inputBuffer.flip();
 
-        connection.notifySelf();
+        selectionKey.interestOpsOr(SelectionKey.OP_WRITE);
         selectionKey.attach(new RequestHandler(connection));
     }
 

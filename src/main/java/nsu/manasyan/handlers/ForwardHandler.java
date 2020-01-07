@@ -13,13 +13,12 @@ public class ForwardHandler extends Handler {
 
     @Override
     public void handle(SelectionKey selectionKey) throws IOException {
-        System.out.println("FORWARD");
         Connection connection = ((Handler) selectionKey.attachment()).getConnection();
-        // todo tmp
-        if(read(selectionKey) == 0){
-            SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
-            socketChannel.close();
+        int readCount = read(selectionKey);
+
+        if (readCount != 0){
+            connection.notifyBufferListener();
         }
-        connection.notifyBufferListener();
     }
+
 }

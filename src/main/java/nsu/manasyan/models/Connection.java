@@ -1,6 +1,8 @@
 package nsu.manasyan.models;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 public class Connection {
     // сюда пишет клиент
@@ -8,6 +10,8 @@ public class Connection {
 
     // отсюда читает
     private ObservableByteBuffer inputBuffer;
+
+    private SocketChannel secondUser;
 
     public Connection(ObservableByteBuffer outputBuffer, ObservableByteBuffer inputBuffer) {
         this.outputBuffer = outputBuffer;
@@ -21,6 +25,10 @@ public class Connection {
 
     public ByteBuffer getOutputBuffer() {
         return outputBuffer.getByteBuffer();
+    }
+
+    public void setSecondUser(SocketChannel secondUser) {
+        this.secondUser = secondUser;
     }
 
     public ByteBuffer getInputBuffer() {
@@ -43,8 +51,8 @@ public class Connection {
         outputBuffer.notifyListener();
     }
 
-    // for socks connect/request response
-    public void notifySelf(){
-        inputBuffer.notifyListener();
+    public void closeSecondUser() throws IOException {
+        System.out.println("SECOND CLOSED");
+        secondUser.close();
     }
 }

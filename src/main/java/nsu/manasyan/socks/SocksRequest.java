@@ -17,6 +17,8 @@ public class    SocksRequest {
 
     private short targetPort;
 
+    private byte parseError = 0x00;
+
     public void setVersion(byte version) {
         this.version = version;
     }
@@ -45,6 +47,14 @@ public class    SocksRequest {
         return addressType;
     }
 
+    public byte getVersion() {
+        return version;
+    }
+
+    public byte getCommand() {
+        return command;
+    }
+
     public String getDomainName() {
         return domainName;
     }
@@ -55,5 +65,13 @@ public class    SocksRequest {
 
     public InetSocketAddress getAddress() throws UnknownHostException {
         return new InetSocketAddress(InetAddress.getByAddress(ip4Address), targetPort);
+    }
+
+    public void setParseError(byte parseError) {
+        this.parseError = parseError;
+    }
+
+    public byte getParseError() {
+        return parseError;
     }
 }
