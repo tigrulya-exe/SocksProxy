@@ -45,6 +45,7 @@ public class RequestHandler extends Handler {
 
         var targetSocketChannel = initTargetSocket(connection, selector, targetAddress);
         putResponseIntoBuf(connection, targetSocketChannel);
+        selectionKey.attach(new ForwardHandler(connection));
     }
 
     public static SocketChannel initTargetSocket(Connection clientConnection,
@@ -79,6 +80,7 @@ public class RequestHandler extends Handler {
         response.setBoundPort((short) socketAddress.getPort());
 
         var inputBuff = connection.getInputBuffer();
+
         inputBuff.put(response.toByteBuffer());
         // limit -> pos, pos -> 0
         inputBuff.flip();

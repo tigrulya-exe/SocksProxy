@@ -4,6 +4,7 @@ import nsu.manasyan.models.Connection;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
 
 public class ForwardHandler extends Handler {
     public ForwardHandler(Connection connection) {
@@ -14,7 +15,11 @@ public class ForwardHandler extends Handler {
     public void handle(SelectionKey selectionKey) throws IOException {
         System.out.println("FORWARD");
         Connection connection = ((Handler) selectionKey.attachment()).getConnection();
-        read(selectionKey);
+        // todo tmp
+        if(read(selectionKey) == 0){
+            SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
+            socketChannel.close();
+        }
         connection.notifyBufferListener();
     }
 }

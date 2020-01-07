@@ -31,6 +31,7 @@ public class SocksParser {
         checkAddressType(byteBuffer.get(), byteBuffer, request);
         request.setTargetPort(byteBuffer.getShort());
 
+        byteBuffer.clear();
         return request;
     }
 

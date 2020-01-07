@@ -37,6 +37,7 @@ public class SocksResponse {
                 .put(boundIp4Address)
                 .putShort(boundPort);
 
+        byteBuffer.flip();
         return byteBuffer;
     }
 }

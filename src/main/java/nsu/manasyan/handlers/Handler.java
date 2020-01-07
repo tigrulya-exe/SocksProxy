@@ -23,7 +23,7 @@ public abstract class Handler {
 
     abstract public void handle(SelectionKey selectionKey) throws IOException;
 
-    public void read(SelectionKey selectionKey) throws IOException {
+    public int read(SelectionKey selectionKey) throws IOException {
         Handler handler = (Handler) selectionKey.attachment();
         SocketChannel socket = (SocketChannel) selectionKey.channel();
         Connection connection = handler.getConnection();
@@ -32,8 +32,10 @@ public abstract class Handler {
 //            return;
 
         var outputBuffer = connection.getOutputBuffer();
-        int count = socket.read(outputBuffer);
+        int readCount = socket.read(outputBuffer);
         outputBuffer.flip();
+
+        return readCount;
     }
 
     private boolean isReadyToRead(Connection connection){
