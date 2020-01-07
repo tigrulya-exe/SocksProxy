@@ -28,11 +28,11 @@ public abstract class Handler {
         Handler handler = (Handler) selectionKey.attachment();
         SocketChannel socket = (SocketChannel) selectionKey.channel();
         Connection connection = handler.getConnection();
+        var outputBuffer = connection.getOutputBuffer();
 
-        if(!isReadyToRead(connection))
+        if(!isReadyToRead(outputBuffer))
             return 0;
 
-        var outputBuffer = connection.getOutputBuffer();
         int readCount = socket.read(outputBuffer);
 
         if(readCount < 0) {
@@ -44,8 +44,8 @@ public abstract class Handler {
         return readCount;
     }
 
-    private boolean isReadyToRead(Connection connection){
-        return connection.getInputBuffer().position() < BUFF_LENGTH / 2;
+    private boolean isReadyToRead(ByteBuffer buffer){
+        return buffer.position() < BUFF_LENGTH / 2;
     }
 
     public int write(SelectionKey selectionKey) throws IOException {
