@@ -68,4 +68,14 @@ public class Connection {
     public boolean isReadyToClose(){
         return outputBuffer.isReadyToClose() && inputBuffer.isReadyToClose();
     }
+
+    private String name = "Client ";
+
+    public void setName() {
+        this.name = "Server ";
+    }
+
+    public String getName() {
+        return name;
+    }
 }

@@ -28,24 +28,26 @@ public abstract class Handler {
         var connection = handler.getConnection();
         var outputBuffer = connection.getOutputBuffer();
 
-        if(!isReadyToRead(outputBuffer))
+        if(!isReadyToRead(outputBuffer, connection)) {
             return 0;
+        }
 
         int readCount = socket.read(outputBuffer);
 
-        if(readCount < 0) {
+        if(readCount <= 0) {
             connection.shutdown();
             selectionKey.interestOps(0);
             checkConnectionClose(socket);
         }
 
-        System.out.println("READ: " + readCount);
+        var name = connection.getName();
 
+        System.out.println(name + "READ: " + readCount);
         return readCount;
     }
 
-    private boolean isReadyToRead(ByteBuffer buffer){
-        return buffer.position() < BUFF_LENGTH / 2;
+    public static int getBuffLength() {
+        return BUFF_LENGTH;
     }
 
     public int write(SelectionKey selectionKey) throws IOException {
@@ -53,25 +55,22 @@ public abstract class Handler {
         var socketChannel = (SocketChannel) selectionKey.channel();
 
         inputBuffer.flip();
+        var name = connection.getName();
+
         int writtenCount = socketChannel.write(inputBuffer);
-        System.out.println("WRITTEN: " + writtenCount);
+        System.out.println(name + "WRITTEN: " + writtenCount);
 
         int remaining = inputBuffer.remaining();
         if(remaining == 0){
             selectionKey.interestOps(SelectionKey.OP_READ);
-            checkAssociate(socketChannel);
-            inputBuffer.clear();
-        }
-
-        if(writtenCount == 0){
-            System.out.println("kl");
+            checkAssociate(socketChannel, inputBuffer);
         }
 
         return remaining;
     }
 
-    public static int getBuffLength() {
-        return BUFF_LENGTH;
+    private boolean isReadyToRead(ByteBuffer buffer, Connection connection){
+        return buffer.position() < BUFF_LENGTH / 2 || connection.isAssociateShutDown();
     }
 
     private void checkConnectionClose(SocketChannel socketChannel) throws IOException {
@@ -81,10 +80,11 @@ public abstract class Handler {
         }
     }
 
-    private void checkAssociate(SocketChannel socketChannel) throws IOException {
+    private void checkAssociate(SocketChannel socketChannel, ByteBuffer buffer) throws IOException {
         if(connection.isAssociateShutDown()){
             socketChannel.shutdownOutput();
-            System.out.println("OUTPUT SHUT DOWN");
+            return;
         }
+        buffer.clear();
     }
 }

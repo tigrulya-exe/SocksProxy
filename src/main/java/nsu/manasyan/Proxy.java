@@ -43,7 +43,6 @@ public class Proxy {
     private void select(Selector selector) throws IOException {
         while (true) {
             selector.select();
-
             var readyKeys = selector.selectedKeys();
             var iterator = readyKeys.iterator();
             while (iterator.hasNext()) {
@@ -70,6 +69,8 @@ public class Proxy {
 
     private void handleSelectionKey(SelectionKey selectionKey) throws IOException {
         Handler handler = (Handler) selectionKey.attachment();
+
+        System.out.println(selectionKey.interestOps());
 
         if (selectionKey.isWritable()) {
             handler.write(selectionKey);

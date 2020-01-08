@@ -1,5 +1,6 @@
 package nsu.manasyan.dns;
 
+import nsu.manasyan.handlers.ConnectHandler;
 import nsu.manasyan.handlers.SocksRequestHandler;
 import nsu.manasyan.socks.SocksRequest;
 
@@ -56,7 +57,7 @@ public class DnsService {
             byte[] queryBytes = query.toWire();
             unresolvedNames.put(query.getHeader().getID(), mapValue);
 
-            // todo add socketChannel field to dns server communication handler class
+            // todo add selectionKey field to dns server communication handler class
             socket.send(ByteBuffer.wrap(queryBytes), dnsServerAddress);
         } catch (TextParseException exc){
             // todo send err response to socks client
@@ -80,7 +81,7 @@ public class DnsService {
 
         var unresolvedName = unresolvedNames.get(responseId);
         InetSocketAddress socketAddress = new InetSocketAddress(address, unresolvedName.getTargetPort());
-        SocksRequestHandler.connectToTarget(unresolvedName.getSelectionKey(), socketAddress);
+        ConnectHandler.connectToTarget(unresolvedName.getSelectionKey(), socketAddress);
         unresolvedNames.remove(responseId);
     }
 

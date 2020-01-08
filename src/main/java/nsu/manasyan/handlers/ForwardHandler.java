@@ -16,7 +16,6 @@ public class ForwardHandler extends Handler {
         Connection connection = ((Handler) selectionKey.attachment()).getConnection();
 
         int readCount = read(selectionKey);
-
         if (readCount != 0){
             connection.notifyBufferListener();
         }

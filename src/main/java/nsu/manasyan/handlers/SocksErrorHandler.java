@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
-public class SocketCloseHandler extends Handler {
-    public SocketCloseHandler(Connection connection) {
+public class SocksErrorHandler extends Handler {
+    public SocksErrorHandler(Connection connection) {
         super(connection);
     }
 
