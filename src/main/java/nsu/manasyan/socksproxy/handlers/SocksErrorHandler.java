@@ -1,6 +1,6 @@
-package nsu.manasyan.handlers;
+package nsu.manasyan.socksproxy.handlers;
 
-import nsu.manasyan.models.Connection;
+import nsu.manasyan.socksproxy.models.Connection;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;

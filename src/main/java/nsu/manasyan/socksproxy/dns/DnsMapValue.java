@@ -1,4 +1,4 @@
-package nsu.manasyan.dns;
+package nsu.manasyan.socksproxy.dns;
 
 import java.nio.channels.SelectionKey;
 

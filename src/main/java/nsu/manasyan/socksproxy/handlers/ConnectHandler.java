@@ -1,7 +1,7 @@
-package nsu.manasyan.handlers;
+package nsu.manasyan.socksproxy.handlers;
 
-import nsu.manasyan.models.Connection;
-import nsu.manasyan.socks.SocksResponse;
+import nsu.manasyan.socksproxy.models.Connection;
+import nsu.manasyan.socksproxy.socks.SocksResponse;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -44,8 +44,6 @@ public class ConnectHandler extends Handler{
         clientConnection.setAssociate(targetSocket);
         targetConnection.setAssociate((SocketChannel) selectionKey.channel());
 
-        targetConnection.setName();
-
         var key = targetSocket.register(selectionKey.selector(), SelectionKey.OP_CONNECT, connectHandler);
         targetConnection.registerBufferListener(() -> key.interestOpsOr(SelectionKey.OP_WRITE));
 
@@ -66,7 +64,7 @@ public class ConnectHandler extends Handler{
     private static void putResponseIntoBuf(Connection connection, SocketChannel socketChannel) throws IOException {
         var socketAddress = (InetSocketAddress) socketChannel.getLocalAddress();
 
-        SocksResponse response = new SocksResponse();
+        var response = new SocksResponse();
         var address = InetAddress.getLocalHost().getAddress();
 
         response.setBoundIp4Address(address);

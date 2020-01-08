@@ -1,13 +1,13 @@
-package nsu.manasyan.handlers;
+package nsu.manasyan.socksproxy.handlers;
 
-import nsu.manasyan.models.Connection;
-import nsu.manasyan.socks.SocksConnectRequest;
-import nsu.manasyan.socks.SocksConnectResponse;
+import nsu.manasyan.socksproxy.models.Connection;
+import nsu.manasyan.socksproxy.socks.SocksConnectRequest;
+import nsu.manasyan.socksproxy.socks.SocksConnectResponse;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 
-import static nsu.manasyan.socks.SocksParser.*;
+import static nsu.manasyan.socksproxy.socks.SocksParser.*;
 
 public class SocksConnectHandler extends SocksHandler{
     private static final byte NO_AUTHENTICATION = 0x00;
@@ -32,7 +32,6 @@ public class SocksConnectHandler extends SocksHandler{
 
         var inputBuffer = connection.getInputBuffer();
         inputBuffer.put(connectResponse.toByteArr());
-//        inputBuffer.flip();
 
         selectionKey.interestOpsOr(SelectionKey.OP_WRITE);
         selectionKey.attach(new SocksRequestHandler(connection));

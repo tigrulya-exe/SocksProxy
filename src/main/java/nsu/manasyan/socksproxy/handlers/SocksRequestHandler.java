@@ -1,17 +1,14 @@
-package nsu.manasyan.handlers;
+package nsu.manasyan.socksproxy.handlers;
 
-import nsu.manasyan.models.Connection;
-import nsu.manasyan.socks.SocksResponse;
-import nsu.manasyan.dns.DnsService;
+import nsu.manasyan.socksproxy.models.Connection;
+import nsu.manasyan.socksproxy.socks.SocksResponse;
+import nsu.manasyan.socksproxy.dns.DnsService;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
 
-import static nsu.manasyan.handlers.ConnectHandler.connectToTarget;
-import static nsu.manasyan.socks.SocksParser.parseRequest;
+import static nsu.manasyan.socksproxy.handlers.ConnectHandler.connectToTarget;
+import static nsu.manasyan.socksproxy.socks.SocksParser.parseRequest;
 
 public class SocksRequestHandler extends SocksHandler {
     private static final byte DOMAIN_NAME_TYPE = 0x03;
@@ -24,8 +21,7 @@ public class SocksRequestHandler extends SocksHandler {
 
     @Override
     public void handle(SelectionKey selectionKey) throws IOException {
-        var connection = getConnection();
-        var outputBuffer = connection.getOutputBuffer();
+        var outputBuffer = getConnection().getOutputBuffer();
         outputBuffer.clear();
 
         read(selectionKey);
@@ -33,8 +29,7 @@ public class SocksRequestHandler extends SocksHandler {
         var parseError = request.getParseError();
 
         if(parseError != NO_ERROR){
-            putErrorResponseIntoBuf(selectionKey, parseError);
-            selectionKey.attach(new SocksErrorHandler(connection));
+            onError(selectionKey, parseError);
             return;
         }
 
@@ -47,10 +42,16 @@ public class SocksRequestHandler extends SocksHandler {
         connectToTarget(selectionKey, request.getAddress());
     }
 
+    public static void onError(SelectionKey selectionKey, byte error) {
+        var handler = (Handler) selectionKey.attachment();
+        var connection = handler.getConnection();
 
-    public void putErrorResponseIntoBuf(SelectionKey selectionKey, byte error) throws IOException {
-        var connection = getConnection();
-        SocksResponse response = new SocksResponse();
+        putErrorResponseIntoBuf(selectionKey, connection, error);
+        selectionKey.attach(new SocksErrorHandler(connection));
+    }
+
+    public static void putErrorResponseIntoBuf(SelectionKey selectionKey, Connection connection,  byte error) {
+        var response = new SocksResponse();
         response.setReply(error);
 
         var inputBuff = connection.getInputBuffer();

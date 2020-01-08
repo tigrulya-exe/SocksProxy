@@ -1,6 +1,6 @@
-package nsu.manasyan.handlers;
+package nsu.manasyan.socksproxy.handlers;
 
-import nsu.manasyan.models.Connection;
+import nsu.manasyan.socksproxy.models.Connection;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -8,7 +8,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public abstract class Handler {
-    private static final int BUFF_LENGTH = 8192;
+    private static final int BUFF_LENGTH = 65536;
 
     private Connection connection;
 
@@ -40,9 +40,6 @@ public abstract class Handler {
             checkConnectionClose(socket);
         }
 
-        var name = connection.getName();
-
-        System.out.println(name + "READ: " + readCount);
         return readCount;
     }
 
@@ -55,10 +52,7 @@ public abstract class Handler {
         var socketChannel = (SocketChannel) selectionKey.channel();
 
         inputBuffer.flip();
-        var name = connection.getName();
-
-        int writtenCount = socketChannel.write(inputBuffer);
-        System.out.println(name + "WRITTEN: " + writtenCount);
+        socketChannel.write(inputBuffer);
 
         int remaining = inputBuffer.remaining();
         if(remaining == 0){
@@ -75,6 +69,7 @@ public abstract class Handler {
 
     private void checkConnectionClose(SocketChannel socketChannel) throws IOException {
         if(connection.isReadyToClose()){
+            System.out.println("Socket closed: " + socketChannel.getRemoteAddress());
             socketChannel.close();
             connection.closeAssociate();
         }

@@ -1,13 +1,12 @@
-package nsu.manasyan;
+package nsu.manasyan.socksproxy;
 
-import nsu.manasyan.handlers.AcceptHandler;
-import nsu.manasyan.handlers.Handler;
-import nsu.manasyan.dns.DnsService;
+import nsu.manasyan.socksproxy.handlers.AcceptHandler;
+import nsu.manasyan.socksproxy.handlers.Handler;
+import nsu.manasyan.socksproxy.dns.DnsService;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.*;
-
 
 public class Proxy {
     private final int proxyPort;
@@ -18,13 +17,15 @@ public class Proxy {
 
     public void start(){
         try(Selector selector = Selector.open();
-            var datagramSocket = DatagramChannel.open();
             var serverSocketChannel = ServerSocketChannel.open()) {
 
-            var dnsService = DnsService.getInstance();
+            var datagramSocket = DatagramChannel.open();
             datagramSocket.configureBlocking(false);
+
+            var dnsService = DnsService.getInstance();
             dnsService.setSocket(datagramSocket);
             dnsService.registerSelector(selector);
+
             initServerSocketChannel(serverSocketChannel, selector);
             select(selector);
         } catch (IOException e) {
@@ -63,8 +64,10 @@ public class Proxy {
         var connection = handler.getConnection();
         var firstSocket = (SocketChannel) selectionKey.channel();
 
+        System.out.println("Socket closed: " + firstSocket.getRemoteAddress());
         firstSocket.close();
         connection.closeAssociate();
+
     }
 
     private void handleSelectionKey(SelectionKey selectionKey) throws IOException {

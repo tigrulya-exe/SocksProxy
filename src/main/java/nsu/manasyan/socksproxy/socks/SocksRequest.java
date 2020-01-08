@@ -1,4 +1,4 @@
-package nsu.manasyan.socks;
+package nsu.manasyan.socksproxy.socks;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

@@ -1,4 +1,4 @@
-package nsu.manasyan.models;
+package nsu.manasyan.socksproxy.models;
 
 import java.nio.ByteBuffer;
 
@@ -27,10 +27,6 @@ public class ObservableByteBuffer {
 
     public void registerBufferListener(ObservableByteBuffer.BufferListener bufferListener){
         this.bufferListener = bufferListener;
-    }
-
-    public boolean isShutdown() {
-        return isShutdown;
     }
 
     public void shutdown() {

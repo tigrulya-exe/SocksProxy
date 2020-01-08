@@ -1,4 +1,4 @@
-package nsu.manasyan.socks;
+package nsu.manasyan.socksproxy.socks;
 
 public class SocksConnectRequest {
     private byte version;
@@ -14,7 +14,6 @@ public class SocksConnectRequest {
     public void setVersion(byte version) {
         this.version = version;
     }
-
 
     public void setnMethods(byte nMethods) {
         this.nMethods = nMethods;

@@ -1,4 +1,4 @@
-package nsu.manasyan.models;
+package nsu.manasyan.socksproxy.models;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -52,9 +52,10 @@ public class Connection {
     }
 
     public void closeAssociate() throws IOException {
-        System.out.println("SECOND CLOSED");
-        if(associate != null)
+        if(associate != null) {
+            System.out.println("Socket closed: " + associate.getRemoteAddress());
             associate.close();
+        }
     }
 
     public void shutdown(){
@@ -67,15 +68,5 @@ public class Connection {
 
     public boolean isReadyToClose(){
         return outputBuffer.isReadyToClose() && inputBuffer.isReadyToClose();
-    }
-
-    private String name = "Client ";
-
-    public void setName() {
-        this.name = "Server ";
-    }
-
-    public String getName() {
-        return name;
     }
 }

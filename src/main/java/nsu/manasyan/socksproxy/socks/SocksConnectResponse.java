@@ -1,4 +1,4 @@
-package nsu.manasyan.socks;
+package nsu.manasyan.socksproxy.socks;
 
 public class SocksConnectResponse {
     private byte version = 0x05;
