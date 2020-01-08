@@ -70,8 +70,6 @@ public class Proxy {
     private void handleSelectionKey(SelectionKey selectionKey) throws IOException {
         Handler handler = (Handler) selectionKey.attachment();
 
-        System.out.println(selectionKey.interestOps());
-
         if (selectionKey.isWritable()) {
             handler.write(selectionKey);
         }
