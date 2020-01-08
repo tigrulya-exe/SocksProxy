@@ -1,6 +1,6 @@
 package nsu.manasyan.dns;
 
-import nsu.manasyan.handlers.RequestHandler;
+import nsu.manasyan.handlers.SocksRequestHandler;
 import nsu.manasyan.socks.SocksRequest;
 
 import java.io.IOException;
@@ -80,7 +80,7 @@ public class DnsService {
 
         var unresolvedName = unresolvedNames.get(responseId);
         InetSocketAddress socketAddress = new InetSocketAddress(address, unresolvedName.getTargetPort());
-        RequestHandler.connectToTarget(unresolvedName.getSelectionKey(), socketAddress);
+        SocksRequestHandler.connectToTarget(unresolvedName.getSelectionKey(), socketAddress);
         unresolvedNames.remove(responseId);
     }
 

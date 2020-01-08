@@ -5,15 +5,9 @@ import nsu.manasyan.handlers.Handler;
 import nsu.manasyan.dns.DnsService;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.channels.*;
-import java.util.Iterator;
 
-/*
-* в днс резолвере должна быть мапа из [ строка хостнейма - ченел клиента ].
-* надо придумать как связать клиента и таргет, чтобы их закрывать одновременно (например хранить сокет ченелы опонента)
-* */
 
 public class Proxy {
     private final int proxyPort;
@@ -24,10 +18,10 @@ public class Proxy {
 
     public void start(){
         try(Selector selector = Selector.open();
-            DatagramChannel datagramSocket = DatagramChannel.open();
-            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
+            var datagramSocket = DatagramChannel.open();
+            var serverSocketChannel = ServerSocketChannel.open()) {
 
-            DnsService dnsService = DnsService.getInstance();
+            var dnsService = DnsService.getInstance();
             datagramSocket.configureBlocking(false);
             dnsService.setSocket(datagramSocket);
             dnsService.registerSelector(selector);
@@ -51,7 +45,7 @@ public class Proxy {
             selector.select();
 
             var readyKeys = selector.selectedKeys();
-            Iterator<SelectionKey> iterator = readyKeys.iterator();
+            var iterator = readyKeys.iterator();
             while (iterator.hasNext()) {
                 var readyKey = iterator.next();
                 try {
@@ -70,9 +64,8 @@ public class Proxy {
         var connection = handler.getConnection();
         var firstSocket = (SocketChannel) selectionKey.channel();
 
-        // todo tmp
         firstSocket.close();
-        connection.closeSecondUser();
+        connection.closeAssociate();
     }
 
     private void handleSelectionKey(SelectionKey selectionKey) throws IOException {
@@ -81,9 +74,9 @@ public class Proxy {
         if (selectionKey.isWritable()) {
             handler.write(selectionKey);
         }
+
         // not only writable
         if(selectionKey.readyOps() != SelectionKey.OP_WRITE)
             handler.handle(selectionKey);
         }
-
 }

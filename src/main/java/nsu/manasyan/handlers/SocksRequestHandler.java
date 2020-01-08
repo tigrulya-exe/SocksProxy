@@ -13,14 +13,14 @@ import java.nio.channels.SocketChannel;
 
 import static nsu.manasyan.socks.SocksParser.parseRequest;
 
-public class RequestHandler extends Handler {
+public class SocksRequestHandler extends Handler {
     private static final byte DOMAIN_NAME_TYPE = 0x03;
 
     private static final int ANY_PORT = 0;
 
     private static final int NO_ERROR = 0;
 
-    public RequestHandler(Connection connection) {
+    public SocksRequestHandler(Connection connection) {
         super(connection);
     }
 
@@ -35,7 +35,7 @@ public class RequestHandler extends Handler {
         var parseError = request.getParseError();
         if(parseError != NO_ERROR){
             putErrorResponseIntoBuf(selectionKey, parseError);
-            selectionKey.attach(new ErrorHandler(connection));
+            selectionKey.attach(new SocketCloseHandler(connection));
             return;
         }
 
@@ -74,8 +74,8 @@ public class RequestHandler extends Handler {
         targetSocket.connect(targetAddress);
         ConnectHandler connectHandler = new ConnectHandler(targetConnection);
 
-        clientConnection.setSecondUser(targetSocket);
-        targetConnection.setSecondUser((SocketChannel) selectionKey.channel());
+        clientConnection.setAssociate(targetSocket);
+        targetConnection.setAssociate((SocketChannel) selectionKey.channel());
 
         key = targetSocket.register(selectionKey.selector(), SelectionKey.OP_CONNECT, connectHandler);
         targetConnection.registerBufferListener(() -> key.interestOpsOr(SelectionKey.OP_WRITE));

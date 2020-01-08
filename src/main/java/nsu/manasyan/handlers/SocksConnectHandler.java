@@ -35,7 +35,7 @@ public class SocksConnectHandler extends Handler{
 //        inputBuffer.flip();
 
         selectionKey.interestOpsOr(SelectionKey.OP_WRITE);
-        selectionKey.attach(new RequestHandler(connection));
+        selectionKey.attach(new SocksRequestHandler(connection));
     }
 
     private static boolean checkMethods(byte[] methods){

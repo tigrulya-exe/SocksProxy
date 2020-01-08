@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 public class ObservableByteBuffer {
     private ByteBuffer byteBuffer;
 
+    private boolean isShutdown = false;
+
     public interface BufferListener{
         void onUpdate();
     }
@@ -25,5 +27,17 @@ public class ObservableByteBuffer {
 
     public void registerBufferListener(ObservableByteBuffer.BufferListener bufferListener){
         this.bufferListener = bufferListener;
+    }
+
+    public boolean isShutdown() {
+        return isShutdown;
+    }
+
+    public void shutdown() {
+        isShutdown = true;
+    }
+
+    public boolean isReadyToClose(){
+        return byteBuffer.remaining() == 0 && isShutdown;
     }
 }

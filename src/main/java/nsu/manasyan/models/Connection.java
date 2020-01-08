@@ -11,7 +11,7 @@ public class Connection {
     // user read from
     private ObservableByteBuffer inputBuffer;
 
-    private SocketChannel secondUser;
+    private SocketChannel associate;
 
     public Connection(ObservableByteBuffer outputBuffer, ObservableByteBuffer inputBuffer) {
         this.outputBuffer = outputBuffer;
@@ -27,8 +27,8 @@ public class Connection {
         return outputBuffer.getByteBuffer();
     }
 
-    public void setSecondUser(SocketChannel secondUser) {
-        this.secondUser = secondUser;
+    public void setAssociate(SocketChannel associate) {
+        this.associate = associate;
     }
 
     public ByteBuffer getInputBuffer() {
@@ -51,9 +51,21 @@ public class Connection {
         outputBuffer.notifyListener();
     }
 
-    public void closeSecondUser() throws IOException {
+    public void closeAssociate() throws IOException {
         System.out.println("SECOND CLOSED");
-        if(secondUser != null)
-            secondUser.close();
+        if(associate != null)
+            associate.close();
+    }
+
+    public void shutdown(){
+        outputBuffer.shutdown();
+    }
+
+    public boolean isAssociateShutDown(){
+        return inputBuffer.isReadyToClose();
+    }
+
+    public boolean isReadyToClose(){
+        return outputBuffer.isReadyToClose() && inputBuffer.isReadyToClose();
     }
 }
