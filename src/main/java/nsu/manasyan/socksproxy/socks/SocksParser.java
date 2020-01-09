@@ -3,7 +3,6 @@ package nsu.manasyan.socksproxy.socks;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-// тут надо быть увереным, что коннект пришел полностью
 public class SocksParser {
     private static final byte WRONG_ADDRESS_TYPE = 0x08;
 
@@ -16,7 +15,6 @@ public class SocksParser {
         connect.setVersion(byteBuffer.get());
         connect.setnMethods(byteBuffer.get());
         byteBuffer.get(connect.getMethods());
-//        byteBuffer.clear();
         return connect;
     }
 
