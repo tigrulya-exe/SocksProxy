@@ -50,7 +50,7 @@ public class Proxy {
                 var readyKey = iterator.next();
                 try {
                     iterator.remove();
-                    if (readyKey.isValid())
+                    if(readyKey.isValid())
                         handleSelectionKey(readyKey);
                 } catch (IOException exception) {
                     closeConnection(readyKey);
@@ -78,7 +78,7 @@ public class Proxy {
         }
 
         // not only writable
-        if(selectionKey.readyOps() != SelectionKey.OP_WRITE)
+        if(selectionKey.isValid() && selectionKey.readyOps() != SelectionKey.OP_WRITE)
             handler.handle(selectionKey);
         }
 }

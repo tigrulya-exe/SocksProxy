@@ -13,6 +13,8 @@ public class Connection {
 
     private SocketChannel associate;
 
+    private int writeStartPosition = 0;
+
     public Connection(ObservableByteBuffer outputBuffer, ObservableByteBuffer inputBuffer) {
         this.outputBuffer = outputBuffer;
         this.inputBuffer = inputBuffer;
@@ -66,7 +68,26 @@ public class Connection {
         return inputBuffer.isReadyToClose();
     }
 
+    public void prepareToWrite(){
+        var inputBuffer = getInputBuffer();
+        inputBuffer.flip();
+        inputBuffer.position(writeStartPosition);
+    }
+
     public boolean isReadyToClose(){
         return outputBuffer.isReadyToClose() && inputBuffer.isReadyToClose();
+    }
+
+    public void resetWriteStartPosition() {
+        this.writeStartPosition = 0;
+    }
+
+    public void setWriteStartPosition() {
+        var inputBuffer = getInputBuffer();
+        this.writeStartPosition = inputBuffer.position();
+
+        var newStartPosition = inputBuffer.limit();
+        inputBuffer.clear();
+        inputBuffer.position(newStartPosition);
     }
 }

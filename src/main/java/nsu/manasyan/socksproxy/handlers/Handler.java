@@ -10,6 +10,8 @@ import java.nio.channels.SocketChannel;
 public abstract class Handler {
     private static final int BUFF_LENGTH = 65536;
 
+    private static final int NO_REMAINING = 0;
+
     private Connection connection;
 
     public Handler(Connection connection) {
@@ -47,18 +49,24 @@ public abstract class Handler {
         return BUFF_LENGTH;
     }
 
+    /* TODO
+    * учесть случай када не все из буфера передалось
+    * делать марк(inputBuffer.remaining()) и потом при read делать вместо clear() reset()
+    * */
     public int write(SelectionKey selectionKey) throws IOException {
         var inputBuffer = connection.getInputBuffer();
         var socketChannel = (SocketChannel) selectionKey.channel();
 
-        inputBuffer.flip();
+        connection.prepareToWrite();
         socketChannel.write(inputBuffer);
 
         int remaining = inputBuffer.remaining();
-        if(remaining == 0){
+
+        if(remaining == NO_REMAINING){
             selectionKey.interestOps(SelectionKey.OP_READ);
             checkAssociate(socketChannel, inputBuffer);
-        }
+        } else
+            connection.setWriteStartPosition();
 
         return remaining;
     }
@@ -81,5 +89,6 @@ public abstract class Handler {
             return;
         }
         buffer.clear();
+        connection.resetWriteStartPosition();
     }
 }

@@ -55,7 +55,7 @@ public class SocksRequestHandler extends SocksHandler {
         response.setReply(error);
 
         var inputBuff = connection.getInputBuffer();
-        inputBuff.put(response.toByteBuffer());
+        inputBuff.put(response.toByteBufferWithoutAddress());
         connection.getOutputBuffer().clear();
         selectionKey.interestOpsOr(SelectionKey.OP_WRITE);
     }

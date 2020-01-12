@@ -40,4 +40,14 @@ public class SocksResponse {
         byteBuffer.flip();
         return byteBuffer;
     }
+
+    public ByteBuffer toByteBufferWithoutAddress(){
+        ByteBuffer byteBuffer = ByteBuffer.allocate(RESPONSE_LENGTH);
+        byteBuffer.put(version)
+                .put(reply)
+                .put((byte) 0x00);
+
+        byteBuffer.flip();
+        return byteBuffer;
+    }
 }
