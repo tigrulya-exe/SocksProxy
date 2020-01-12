@@ -49,10 +49,6 @@ public abstract class Handler {
         return BUFF_LENGTH;
     }
 
-    /* TODO
-    * учесть случай када не все из буфера передалось
-    * делать марк(inputBuffer.remaining()) и потом при read делать вместо clear() reset()
-    * */
     public int write(SelectionKey selectionKey) throws IOException {
         var inputBuffer = connection.getInputBuffer();
         var socketChannel = (SocketChannel) selectionKey.channel();
