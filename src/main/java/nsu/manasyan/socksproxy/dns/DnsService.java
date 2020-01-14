@@ -22,6 +22,8 @@ public class DnsService {
     private static final int DNS_SERVER_PORT = 53;
 
     private static final byte HOST_UNREACHABLE_ERROR = 0x04;
+
+    private static final int BUF_SIZE = 1024;
     
     private int messageId = 0;
 
@@ -74,10 +76,12 @@ public class DnsService {
         dnsResponseHandler = new Handler(null) {
             @Override
             public void handle(SelectionKey selectionKey) throws IOException {
-                var byteBuffer = ByteBuffer.allocate(8400);
-                socket.read(byteBuffer);
+                var byteBuffer = ByteBuffer.allocate(BUF_SIZE);
+                if(socket.receive(byteBuffer) == null){
+                    return;
+                }
 
-                var response = new Message(byteBuffer);
+                var response = new Message(byteBuffer.flip());
                 var answers = response.getSectionArray(Section.ANSWER);
 
                 int responseId = response.getHeader().getID();
@@ -103,7 +107,7 @@ public class DnsService {
         var message = new Message();
         message.setHeader(header);
 
-        var record = Record.newRecord(new Name(domainName), Type.A, DClass.IN);
+        var record = Record.newRecord(new Name(domainName + "."), Type.A, DClass.IN);
         message.addRecord(record, Section.QUESTION);
 
         return message;

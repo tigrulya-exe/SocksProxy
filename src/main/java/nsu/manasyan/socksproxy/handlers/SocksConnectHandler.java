@@ -12,6 +12,8 @@ import static nsu.manasyan.socksproxy.socks.SocksParser.*;
 public class SocksConnectHandler extends SocksHandler{
     private static final byte NO_AUTHENTICATION = 0x00;
 
+    private static final int SOCKS_VERSION = 0x05;
+
     private static final byte NO_COMPARABLE_METHOD = (byte) 0xFF;
 
     public SocksConnectHandler(Connection connection) {
@@ -25,9 +27,9 @@ public class SocksConnectHandler extends SocksHandler{
         outputBuffer.clear();
         read(selectionKey);
 
-        SocksConnectRequest ConnectRequest = parseConnect(outputBuffer);
+        SocksConnectRequest connectRequest = parseConnect(outputBuffer);
         SocksConnectResponse connectResponse = new SocksConnectResponse();
-        if(!checkMethods(ConnectRequest.getMethods()))
+        if(!checkRequest(connectRequest))
             connectResponse.setMethod(NO_COMPARABLE_METHOD);
 
         var inputBuffer = connection.getInputBuffer();
@@ -35,6 +37,11 @@ public class SocksConnectHandler extends SocksHandler{
 
         selectionKey.interestOpsOr(SelectionKey.OP_WRITE);
         selectionKey.attach(new SocksRequestHandler(connection));
+    }
+
+    private boolean checkRequest(SocksConnectRequest connectRequest){
+        return connectRequest.getVersion() == SOCKS_VERSION
+                && checkMethods(connectRequest.getMethods());
     }
 
     private static boolean checkMethods(byte[] methods){

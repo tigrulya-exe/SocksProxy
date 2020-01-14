@@ -54,6 +54,7 @@ public class Proxy {
                         handleSelectionKey(readyKey);
                 } catch (IOException exception) {
                     closeConnection(readyKey);
+                } catch (CancelledKeyException exc){
                 }
             }
         }
@@ -64,10 +65,13 @@ public class Proxy {
         var connection = handler.getConnection();
         var firstSocket = (SocketChannel) selectionKey.channel();
 
-        System.out.println("Socket closed: " + firstSocket.getRemoteAddress());
-        firstSocket.close();
-        connection.closeAssociate();
-
+        try {
+            System.out.println("Socket closed: " + firstSocket.getRemoteAddress());
+            firstSocket.close();
+            connection.closeAssociate();
+        } catch (ClosedChannelException cce){
+            System.out.println(cce.getLocalizedMessage());
+        }
     }
 
     private void handleSelectionKey(SelectionKey selectionKey) throws IOException {
