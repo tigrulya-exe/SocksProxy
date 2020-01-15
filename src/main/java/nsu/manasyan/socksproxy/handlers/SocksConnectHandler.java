@@ -24,10 +24,12 @@ public class SocksConnectHandler extends SocksHandler{
     public void handle(SelectionKey selectionKey) throws IOException {
         Connection connection = getConnection();
         var outputBuffer = connection.getOutputBuffer();
-        outputBuffer.clear();
         read(selectionKey);
 
         SocksConnectRequest connectRequest = parseConnect(outputBuffer);
+        if(connectRequest == null)
+            return;
+
         SocksConnectResponse connectResponse = new SocksConnectResponse();
         if(!checkRequest(connectRequest))
             connectResponse.setMethod(NO_COMPARABLE_METHOD);
@@ -37,6 +39,7 @@ public class SocksConnectHandler extends SocksHandler{
 
         selectionKey.interestOpsOr(SelectionKey.OP_WRITE);
         selectionKey.attach(new SocksRequestHandler(connection));
+        connection.getOutputBuffer().clear();
     }
 
     private boolean checkRequest(SocksConnectRequest connectRequest){

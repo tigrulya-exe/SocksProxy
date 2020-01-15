@@ -22,10 +22,13 @@ public class SocksRequestHandler extends SocksHandler {
     @Override
     public void handle(SelectionKey selectionKey) throws IOException {
         var outputBuffer = getConnection().getOutputBuffer();
-        outputBuffer.clear();
+//        outputBuffer.clear();
 
         read(selectionKey);
         var request = parseRequest(outputBuffer);
+        if (request == null)
+            return;
+
         var parseError = request.getParseError();
 
         if(parseError != NO_ERROR){
