@@ -2,6 +2,7 @@ package nsu.manasyan.socksproxy.dns;
 
 import nsu.manasyan.socksproxy.handlers.ConnectHandler;
 import nsu.manasyan.socksproxy.handlers.Handler;
+import nsu.manasyan.socksproxy.models.FiniteTreeMap;
 import nsu.manasyan.socksproxy.socks.SocksRequest;
 
 import java.io.IOException;
@@ -24,6 +25,8 @@ public class DnsService {
     private static final byte HOST_UNREACHABLE_ERROR = 0x04;
 
     private static final int BUF_SIZE = 1024;
+
+    private static final int CACHE_SIZE = 256;
     
     private int messageId = 0;
 
@@ -35,6 +38,9 @@ public class DnsService {
 
     // key - dns message id
     private Map<Integer, DnsMapValue> unresolvedNames = new HashMap<>();
+
+    // key - hostname, value - ip
+    private FiniteTreeMap<String, String> dnsCache = new FiniteTreeMap<>(CACHE_SIZE);
 
     private static class SingletonHelper{
         private static final DnsService dnsService = new DnsService();
@@ -60,6 +66,13 @@ public class DnsService {
     public void resolveName(SocksRequest request, SelectionKey selectionKey) throws IOException {
         try {
             var name = request.getDomainName();
+            var cachedAddress = dnsCache.get(name + ".");
+            if(cachedAddress != null){
+                connectToTarget(cachedAddress, selectionKey, request.getTargetPort());
+                return;
+            }
+
+            System.out.println("New domain name to resolve: " + request.getDomainName());
             var mapValue = new DnsMapValue(selectionKey, request.getTargetPort());
             var query = getQuery(name);
             var queryBytes = query.toWire();
@@ -91,12 +104,20 @@ public class DnsService {
                     return;
                 }
 
+                var hostname = response.getQuestion().getName().toString();
+                System.out.println(hostname + " resolved");
+
                 var address = answers[0].rdataToString();
-                var socketAddress = new InetSocketAddress(address, unresolvedName.getTargetPort());
-                ConnectHandler.connectToTarget(unresolvedName.getSelectionKey(), socketAddress);
+                dnsCache.put(hostname, address);
+                connectToTarget(address, unresolvedName.getSelectionKey(), unresolvedName.getTargetPort());
                 unresolvedNames.remove(responseId);
             }
         };
+    }
+
+    private void connectToTarget(String address, SelectionKey selectionKey, int port) throws IOException {
+        var socketAddress = new InetSocketAddress(address, port);
+        ConnectHandler.connectToTarget(selectionKey, socketAddress);
     }
 
     private Message getQuery(String domainName) throws TextParseException {
